@@ -1,0 +1,4 @@
+colorama==0.3.9
+folium==0.6.0
+geopy==1.17.0
+shodan==1.10.4
