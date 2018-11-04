@@ -1,6 +1,7 @@
 # ꓘamerka
 *Build interactive map of cameras from Shodan.*  
 Based on your address or coordinates, script creates map of Shodan cameras in neighborhood.
+https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-from-shodan-a0267849ec0a
 # Requirements
 - Shodan  
 - Geopy  
