@@ -8,7 +8,7 @@ Based on your address or coordinates, script creates map of Shodan cameras in ne
 - Colorama  
 
 ```pip -r install requirements```   
-**Change API_KEY in line 49**
+**Change API_KEY in line 14**
 
 # Usage
 ```
