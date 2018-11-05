@@ -12,7 +12,7 @@ https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-f
 **Change API_KEY in line 14**
 # Restrictions
 It can be used only with paid Shodan plan.
-
+Build with Python 2
 # Usage
 ```
 root@kali: kamerka.py --address "White House"
