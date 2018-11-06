@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
+import sys
+
 import folium
 import shodan
-from folium.plugins import MarkerCluster
-import argparse
-from geopy.geocoders import Nominatim
 from colorama import Fore
-import sys
+from folium.plugins import MarkerCluster
 from geopy import distance
-from argparse import RawTextHelpFormatter
+from geopy.geocoders import Nominatim
 
 API_KEY = 'CHANGE_ME'
 
@@ -33,7 +33,7 @@ desc = """              o#######o
              kamerka.py --coordinates "37.235,-115.811111" --dark"""
 
 parser = argparse.ArgumentParser(
-    description=desc, formatter_class=RawTextHelpFormatter)
+    description=desc, formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument("--coordinates", help="Coordinates",
                     default="")
