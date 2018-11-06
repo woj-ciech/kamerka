@@ -15,7 +15,7 @@ It can be used only with paid Shodan plan.
 Build with Python 2
 # Usage
 ```
-root@kali: kamerka.py --address "White House"
+root@kali: python kamerka.py --address "White House"
 
 White House, 1600, Pennsylvania Avenue Northwest, Golden Triangle, Washington, D.C., 20500, USA
 Found 81 results
