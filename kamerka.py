@@ -36,14 +36,21 @@ parser = argparse.ArgumentParser(
     description=desc, formatter_class=RawTextHelpFormatter)
 
 parser.add_argument("--coordinates", help="Coordinates",
-                    default="")
+                    default="", type=str)
+parser.add_argument("--lat", help="Latitude",  default=0.0, type=float)
+parser.add_argument("--lon", help="Longitude", default=0.0, type=float)
 parser.add_argument("--radius", help="Radius in km (Default 3)", default="3")
 parser.add_argument("--address", help="Address")
 parser.add_argument("--dark", help="Dark Theme", action='store_true')
 
 args = parser.parse_args()
 dark = args.dark
-coordinates = args.coordinates
+
+if args.lat != 0.0 and args.lon != 0.0:
+    coordinates = str(args.lat) + "," + str(args.lon)
+else:
+    coordinates = args.coordinates
+
 address = args.address
 
 radius = args.radius
