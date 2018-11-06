@@ -13,24 +13,24 @@ from argparse import RawTextHelpFormatter
 
 API_KEY = 'CHANGE_ME'
 
-desc = "              o#######o\n\
-            o###########o\n\
-            o#############o\n\
-            #################\n\
-            ######  \########o\n\
-           #;^ _^,/---\#####!\n\
-           ,` /^_ .-~^~-.__\#\n\
-          /    ^\/,,@@@,, ;|\n\
-         |      \!!@@@@@!! ^,\n\
-        #.    .\; \'9@@@P\'   ^,\n\
-        ###./^ ----,_^^      /@-._\n\
-                      ^--._,o@@@@@@\n\
-                         ^;@@@@@@@@@\n\
-                           ^-;@@@@\n\
-    ꓘamemrka - Build interactive map of cameras from Shodan\n\
-    medium.com/@woj-ciech github.com/woj_ciech\n\n\
-    Example: kamerka.py --address \"FSB, Russia\"\n\
-             kamerka.py --coordinates \"37.235,-115.811111\" --dark"
+desc = """              o#######o
+            o###########o
+            o#############o
+            #################
+            ######  \########o
+           #;^ _^,/---\#####!
+           ,` /^_ .-~^~-.__\#
+          /    ^\/,,@@@,, ;|
+         |      \!!@@@@@!! ^,
+        #.    .\; \'9@@@P\'   ^,
+        ###./^ ----,_^^      /@-._
+                      ^--._,o@@@@@@
+                         ^;@@@@@@@@@
+                           ^-;@@@@
+    ꓘamemrka - Build interactive map of cameras from Shodan
+    medium.com/@woj-ciech github.com/woj_ciech\n
+    Example: kamerka.py --address "FSB, Russia"
+             kamerka.py --coordinates "37.235,-115.811111" --dark"""
 
 parser = argparse.ArgumentParser(
     description=desc, formatter_class=RawTextHelpFormatter)
