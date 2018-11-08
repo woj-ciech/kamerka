@@ -46,7 +46,8 @@ parser.add_argument("--dark", help="Dark Theme", action='store_true')
 args = parser.parse_args()
 dark = args.dark
 
-if args.lat != 0.0 and args.lon != 0.0:
+# lat / lon [0,0] == NULL island (in the ocean)
+if args.lat != 0.0 or args.lon != 0.0:
     coordinates = str(args.lat) + "," + str(args.lon)
 else:
     coordinates = args.coordinates
