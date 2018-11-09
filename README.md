@@ -1,6 +1,6 @@
 # ꓘamerka
-*Build interactive map of cameras from Shodan.*  
-Based on your address or coordinates, script creates map of Shodan cameras in neighborhood.
+*Build an interactive map of cameras from Shodan.*  
+The script creates a map of Shodan cameras based on your address or coordinates.
 https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-from-shodan-a0267849ec0a
 # Requirements
 - Shodan  
@@ -11,8 +11,8 @@ https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-f
 ```pip install -r requirements.txt```   
 **Change API_KEY in line 14**
 # Restrictions
-It can be used only with paid Shodan plan.
-Build with Python 2
+It can be used only with a paid Shodan plan.
+Build with Python 2.
 # Usage
 ```
 root@kali: kamerka.py --address "White House"
@@ -43,4 +43,4 @@ Saving map as White House.html
 
 
 # Other
-Do not test device that you don't own.
+Do not test on devices you don't own.
