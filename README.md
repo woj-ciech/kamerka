@@ -8,7 +8,7 @@ https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-f
 - Foilum  
 - Colorama  
 
-```pip -r install requirements```   
+```pip install -r requirements.txt```   
 **Change API_KEY in line 14**
 # Restrictions
 It can be used only with paid Shodan plan.
