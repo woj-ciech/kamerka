@@ -54,7 +54,7 @@ def shodan_query(query):
     try:
         result = api.search(query)
     except shodan.APIError as e:
-        print e.message
+        print('Error: {}'.format(e))
         sys.exit()
 
     if len(result['matches']) > 0:
