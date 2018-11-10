@@ -84,6 +84,7 @@ def draw_map(results, first_coordinates, filename):
 
     for counter, camera in enumerate(results['matches']):
         ip = camera['ip_str']
+        port = str(camera['port'])
         product = camera['product']
 
         coordinates.append(camera['location']['latitude'])
@@ -95,7 +96,7 @@ def draw_map(results, first_coordinates, filename):
         else:
             color = "green"
 
-        print "IP: " + Fore.GREEN + ip + Fore.RESET
+        print "IP: " + Fore.GREEN + ip + ":" + port + Fore.RESET
         print "Coordinates: " + Fore.BLUE + str(camera['location']['latitude']) + "," + Fore.BLUE + str(
             camera['location']['longitude']) + Fore.RESET
         print "-----------------------------------"
@@ -107,9 +108,9 @@ def draw_map(results, first_coordinates, filename):
             unit = "km"
 
         if coordinates in repeats:
-            folium.Marker([camera['location']['latitude'], camera['location']['longitude']], popup=ip + "<br>" + product + "<br>" + str(distance_compare)[0:5] + "" + unit + " from target",icon=folium.Icon(color=color)).add_to(marker_cluster)
+            folium.Marker([camera['location']['latitude'], camera['location']['longitude']], popup=ip + ":" + port + "<br>" + product + "<br>" + str(distance_compare)[0:5] + "" + unit + " from target",icon=folium.Icon(color=color)).add_to(marker_cluster)
         else:
-            folium.Marker([camera['location']['latitude'], camera['location']['longitude']], popup=ip + "<br>" + product + "<br>" + str(distance_compare)[0:5] + unit + " from target",icon=folium.Icon(color=color)).add_to(folium_map)
+            folium.Marker([camera['location']['latitude'], camera['location']['longitude']], popup=ip + ":" + port + "<br>" + product + "<br>" + str(distance_compare)[0:5] + unit + " from target",icon=folium.Icon(color=color)).add_to(folium_map)
 
         repeats.append(coordinates)  # make list of lists of coordinates
         coordinates = []
