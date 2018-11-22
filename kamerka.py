@@ -41,6 +41,9 @@ parser.add_argument("--radius", help="Radius in km (Default 3)", default="3")
 parser.add_argument("--address", help="Address")
 parser.add_argument("--dark", help="Dark Theme", action='store_true')
 
+if len(sys.argv)==1:
+    parser.print_help(sys.stderr)
+    sys.exit(1)
 args = parser.parse_args()
 dark = args.dark
 coordinates = args.coordinates
