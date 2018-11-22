@@ -1,19 +1,26 @@
 # ꓘamerka
-*Build an interactive map of cameras from Shodan.*  
+*Build an interactive map of cameras from Shodan.*
 The script creates a map of Shodan cameras based on your address or coordinates.
 https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-from-shodan-a0267849ec0a
 # Requirements
-- Shodan  
-- Geopy  
-- Foilum  
-- Colorama  
+- Shodan
+- Geopy
+- Foilum
+- Colorama
 
-```pip install -r requirements.txt```   
+```pip install -r requirements.txt```
 **Change API_KEY in line 14**
 # Restrictions
 It can be used only with a paid Shodan plan.
-Build with Python 2.
+
+Build with Python 2 or 3.
 # Usage
+
+First, export your Shodan API key
+```
+export SHODAN_KEY=my-shodan-api-key
+```
+then,
 ```
 root@kali: python kamerka.py --address "White House"
 
@@ -34,7 +41,7 @@ IP: xxx.xxx.xxx.xxx
 Coordinates: 38.xxx,-77.xxx
 -----------------------------------
 Saving map as White House.html
-```   
+```
 
 ![](https://i.imgur.com/6SHjUdI.png)
 

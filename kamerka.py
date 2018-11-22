@@ -3,6 +3,7 @@
 from __future__ import print_function
 import argparse
 import sys
+import os
 
 import folium
 import shodan
@@ -11,7 +12,7 @@ from folium.plugins import MarkerCluster
 from geopy import distance
 from geopy.geocoders import Nominatim
 
-API_KEY = 'CHANGE_ME'
+API_KEY = os.getenv('SHODAN_KEY', "your-shodan-key")
 
 desc = """              o#######o
             o###########o
