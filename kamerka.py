@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 import argparse
 import sys
 
@@ -58,9 +58,9 @@ def shodan_query(query):
         sys.exit()
 
     if len(result['matches']) > 0:
-        print 'Found ' + str(len(result['matches'])) + " results"
+        print('Found ' + str(len(result['matches'])) + " results")
     else:
-        print "Nothing was found"
+        print("Nothing was found")
         sys.exit()
 
     return result
@@ -95,10 +95,10 @@ def draw_map(results, first_coordinates, filename):
         else:
             color = "green"
 
-        print "IP: " + Fore.GREEN + ip + Fore.RESET
-        print "Coordinates: " + Fore.BLUE + str(camera['location']['latitude']) + "," + Fore.BLUE + str(
-            camera['location']['longitude']) + Fore.RESET
-        print "-----------------------------------"
+        print("IP: " + Fore.GREEN + ip + Fore.RESET)
+        print("Coordinates: " + Fore.BLUE + str(camera['location']['latitude']) + "," + Fore.BLUE + str(
+            camera['location']['longitude']) + Fore.RESET)
+        print ("-----------------------------------")
         coordinates_measure = (camera['location']['latitude'], camera['location']['longitude'])
         distance_compare = distance.distance(first_coordinates_measure, coordinates_measure).m
         unit = "m"
@@ -114,23 +114,23 @@ def draw_map(results, first_coordinates, filename):
         repeats.append(coordinates)  # make list of lists of coordinates
         coordinates = []
 
-    print "Saving map as " + filename + '.html'
+    print("Saving map as " + filename + '.html')
     folium_map.save(filename + ".html")
 
 
 if coordinates:
-    print desc
+    print(desc)
     geolocator = Nominatim(user_agent="Kamerka")
     try:
         location = geolocator.reverse(coordinates, language='en')
         if location.address is None:
-            print "Nothing was found"
+            print("Nothing was found")
             sys.exit()
     except:
-        print "No address was found"
+        print("No address was found")
         sys.exit()
 
-    print location.address
+    print(location.address)
 
     query_cameras = "geo:" + coordinates + "," + radius + " device:webcam"
 
@@ -140,13 +140,13 @@ if coordinates:
     draw_map(cameras, converted_coordinates, coordinates)
     sys.exit()
 if address:
-    print desc
+    print(desc)
     geolocator = Nominatim(user_agent="test")
     location = geolocator.geocode(address)
     try:
-        print location.address
+        print(location.address)
     except Exception as e:
-        print "Nothing was found, correct your address"
+        print("Nothing was found, correct your address")
         sys.exit()
 
     coordinates = [location.latitude, location.longitude]
