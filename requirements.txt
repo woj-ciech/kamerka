@@ -1,5 +1,8 @@
-colorama==0.3.9
-folium==0.6.0
 geopy==1.17.0
+colorama==0.3.9
 shodan==1.10.4
-geographiclib
+folium==0.6.0
+twitter==1.18.0
+InstagramAPI==1.0.2
+flickrapi==2.4.0
+branca==0.3.0
