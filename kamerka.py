@@ -194,8 +194,8 @@ def flickr_query(lat, lon):
     print "----------------" + Fore.LIGHTYELLOW_EX + "Flickr" + Fore.RESET + "----------------"
     print "Found " + Fore.GREEN + photo_list['photos']['total'] + Fore.RESET + " result(s)"
     for photo in photo_list['photos']['photo']:
-        print Fore.LIGHTYELLOW_EX + photo['title'] + Fore.RESET + " in " + Fore.LIGHTYELLOW_EX + photo[
-            'latitude'] + Fore.RESET + ',' + Fore.LIGHTYELLOW_EX + photo['longitude'] + Fore.RESET
+        print Fore.LIGHTYELLOW_EX + photo['title'] + Fore.RESET + " in " + Fore.LIGHTYELLOW_EX + str(photo[
+            'latitude']) + Fore.RESET + ',' + Fore.LIGHTYELLOW_EX + str(photo['longitude']) + Fore.RESET
 
     return photo_list['photos']['photo']
 
