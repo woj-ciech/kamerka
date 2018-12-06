@@ -194,8 +194,11 @@ def flickr_query(lat, lon):
     print "----------------" + Fore.LIGHTYELLOW_EX + "Flickr" + Fore.RESET + "----------------"
     print "Found " + Fore.GREEN + photo_list['photos']['total'] + Fore.RESET + " result(s)"
     for photo in photo_list['photos']['photo']:
-        print Fore.LIGHTYELLOW_EX + photo['title'] + Fore.RESET + " in " + Fore.LIGHTYELLOW_EX + str(photo[
-            'latitude']) + Fore.RESET + ',' + Fore.LIGHTYELLOW_EX + str(photo['longitude']) + Fore.RESET
+        try:
+            print Fore.LIGHTYELLOW_EX + photo['title'] + Fore.RESET + " in " + Fore.LIGHTYELLOW_EX + photo[
+                        'latitude'] + Fore.RESET + ',' + Fore.LIGHTYELLOW_EX + photo['longitude'] + Fore.RESET
+        except TypeError:
+            pass
 
     return photo_list['photos']['photo']
 
@@ -351,7 +354,7 @@ def draw_map(results, lat, lon, service):
             icon = folium.features.CustomIcon(flickr_icon, icon_size=(35, 35))
 
 
-            str_coordinates = flickr_photo['latitude'] + ',' + flickr_photo['longitude']
+            str_coordinates = str(flickr_photo['latitude']) + ',' + str(flickr_photo['longitude'])
             lat =  float(flickr_photo['latitude'])
             long =  float(flickr_photo['longitude'])
             try:
