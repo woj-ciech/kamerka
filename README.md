@@ -8,8 +8,22 @@ https://medium.com/@woj_ciech/hunting-with-%EA%93%98amerka-2-0-aka-fist-flickr-i
 
 Previous version https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-from-shodan-a0267849ec0a
 
+# v3 update
+Visualize Industrial Control Systems of any country.  
+Use *--country* flag and pass short code for your country.  
+To use Street View add your API key in line 109
+
+```
+root@kali:~/# python kamerka.py --country IL
+```
+![](https://i.imgur.com/IYIcd22.jpg)
+
+![](https://i.imgur.com/yq9yNpv.jpg)
+
+![](https://i.imgur.com/Cns4xJA.jpg)
+
 # Requirements
-- Written with :heartpulse: in Python 2
+- Written with :heartpulse: in Python 3
 - Shodan + paid subscription 
 - Geopy  
 - Foilum  
@@ -18,6 +32,7 @@ Previous version https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive
 - Twitter
 - flickrapi
 - Branca
+- Google Street View API
 
 ```pip install -r requirements.txt```
    
@@ -36,10 +51,11 @@ https://github.com/LevPasha/Instagram-API-python/pull/492
 
 # Usage
 ```
-root@kali:~/# python kamerka.py -h
+(venv) root@kali:~/PycharmProjects/kamerka# python kamerka.py -h
 Fail to import moviepy. Need only for Video upload.
 usage: kamerka.py [-h] [--lat LAT] [--lon LON] [--radius RADIUS] [--dark]
-             [--twitter] [--camera] [--flickr] [--instagram] [--printer]
+                  [--twitter] [--camera] [--flickr] [--instagram] [--printer]
+                  [--country COUNTRY]
 
               o#######o
             o###########o
@@ -56,25 +72,26 @@ usage: kamerka.py [-h] [--lat LAT] [--lon LON] [--radius RADIUS] [--dark]
                          ^;@@@@@@@@@
                            ^-;@@@@
 ꓘamerka 2.0 (FIST) - Build interactive map of cameras, tweets and photos
-medium.com/@woj_ciech github.com/woj-ciech
+medium.com/@woj-ciech github.com/woj_ciech
 
 python kamerka.py -h
-Example: python kamerka.py --lat 37.235 --lon 115.811111 --dark --twitter --camera --printer
+Example: python kamerka.py --lat "37.235 --lon 115.811111" --dark --twitter --camera --printer
+"python kamerka.py --country RU
 
 optional arguments:
-  -h, --help       show this help message and exit
-  --radius RADIUS  Radius in km (Default 3)
-  --dark           Dark Theme
-  --twitter        Twitter module
-  --camera         Camera module
-  --flickr         Flickr module
-  --instagram      Instagram module
-  --printer        Printer module
+  -h, --help         show this help message and exit
+  --radius RADIUS    Radius in km (Default 3)
+  --dark             Dark Theme
+  --twitter          Twitter module
+  --camera           Camera module
+  --flickr           Flickr module
+  --instagram        Instagram module
+  --printer          Printer module
+  --country COUNTRY  Find Industrial Control Systems for country. Short code for country: US,IL,RU
 
 Required arguments:
-  --lat LAT        Latitude
-  --lon LON        Longitude
-
+  --lat LAT          Latitude
+  --lon LON          Longitude
 ```   
 
 ```
