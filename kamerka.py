@@ -89,7 +89,7 @@ if not country:
 
 ###API keys and credentials
 #Shodan
-SHODAN_API_KEY = 'uBDrKLPxFkfF34S40ZtvaCX7micK9SEu'
+SHODAN_API_KEY = ''
 
 #Instagram
 INSTAGRAM_USER = ""
@@ -106,7 +106,7 @@ TWITTER_CONSUMER_KEY = ""
 TWITTER_CONSUMER_SECRET = ""
 
 #Google Street View
-GOOGLE_STREET_VIEW_API_KEY = "AIzaSyB0lewvZ6qrTzfvgiAI4xNID794ZDi4Sd0"
+GOOGLE_STREET_VIEW_API_KEY = ""
 
 #Change map theme
 tile = "OpenStreetMap"
