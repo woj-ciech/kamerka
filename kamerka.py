@@ -159,14 +159,17 @@ def g_streetview(lat, lon, key):
         return False
 
 def get_host_info(ip):
-    req = requests.get("https://api.shodan.io/shodan/host/"+ip+"?key="+SHODAN_API_KEY)
-    req_json = json.loads(req.text)
+            try:
+                req = requests.get("https://api.shodan.io/shodan/host/"+ip+"?key="+SHODAN_API_KEY)
+                req_json = json.loads(req.text)
 
-    # with open(ip, 'w') as outfile:
-    #     json.dump(req_json, outfile) ### IF you need to dump information for each host for statistics uncomment this line
-    # it will create file named as IP with json data from Shodan
+                # with open(ip, 'w') as outfile:
+                #     json.dump(req_json, outfile) ### IF you need to dump information for each host for statistics uncomment this line
+                # it will create file named as IP with json data from Shodan
 
-    return req_json['ports']
+                return req_json['ports']
+            except:
+                return False
 
 def instagram_query(lat, lon):
     print("----------------" + Fore.MAGENTA + "Instagram" + Fore.RESET + "----------------")
@@ -505,10 +508,10 @@ def draw_map(results, service, lat=None, lon=None):
             additional_ports = get_host_info(ip)
             additional_ports_without_default = []
 
-
-            for i in additional_ports:
-                if i != port:
-                    additional_ports_without_default.append(i)
+            if additional_ports:
+                        for i in additional_ports:
+                            if i != port:
+                                additional_ports_without_default.append(i)
 
             if len(additional_ports_without_default) > 0:
                 for i in additional_ports_without_default:
