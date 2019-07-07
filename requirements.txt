@@ -8,3 +8,4 @@ flickrapi==2.4.0
 branca==0.3.0
 google_streetview
 google-streetview
+elasticsearch

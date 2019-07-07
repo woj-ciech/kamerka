@@ -8,19 +8,35 @@ https://medium.com/@woj_ciech/hunting-with-%EA%93%98amerka-2-0-aka-fist-flickr-i
 
 Previous version https://medium.com/@woj_ciech/%EA%93%98amerka-build-interactive-map-of-cameras-from-shodan-a0267849ec0a
 
+# v4 update
+Added RTSP (Real-Time Streaming Protocol)
+ ![](https://i.imgur.com/diuLuHd.jpg)
+ 
+ MQTT (Message Queue Telemetry Transport).
+![](https://i.imgur.com/LAscLR2.jpg)
+
+Elasticsearch output
+![](https://i.imgur.com/ZuHhbf4.jpg)
+
+Additional:
+- recursive mode (check each host for open ports and more information)
+- "Check ownership" link on map which redirects to bgp.he.net for detailed information about IP
+- "Lookup on Shodan" takes you to Shodan details about host
+
 # v3 update
 Visualize Industrial Control Systems of any country.  
 Use *--country* flag and pass short code for your country.  
 To use Street View add your API key in line 109
 
+
 ```
 root@kali:~/# python kamerka.py --country IL
 ```
+
 ![](https://i.imgur.com/IYIcd22.jpg)
 
 ![](https://i.imgur.com/yq9yNpv.jpg)
 
-![](https://i.imgur.com/Cns4xJA.jpg)
 
 # Requirements
 - Written with :heartpulse: in Python 3
@@ -33,10 +49,11 @@ root@kali:~/# python kamerka.py --country IL
 - flickrapi
 - Branca
 - Google Street View API
+- Elasticsearch
 
 ```pip install -r requirements.txt```
    
-**Put your API keys in lines 85-99**
+**Put your API keys in code**
 
 To use Instagram module, you have to add additional method to InstagramAPI.py file.
 ```
@@ -52,10 +69,11 @@ https://github.com/LevPasha/Instagram-API-python/pull/492
 # Usage
 ```
 (venv) root@kali:~/PycharmProjects/kamerka# python kamerka.py -h
-Fail to import moviepy. Need only for Video upload.
 usage: kamerka.py [-h] [--lat LAT] [--lon LON] [--radius RADIUS] [--dark]
                   [--twitter] [--camera] [--flickr] [--instagram] [--printer]
-                  [--country COUNTRY]
+                  [--country COUNTRY] [--rtsp] [--mqtt] [--open]
+                  [--first FIRST] [--last LAST] [--recursive]
+                  [--elasticsearch] [--host HOST] [--port PORT]
 
               o#######o
             o###########o
@@ -88,14 +106,24 @@ optional arguments:
   --instagram        Instagram module
   --printer          Printer module
   --country COUNTRY  Find Industrial Control Systems for country. Short code for country: US,IL,RU
+  --rtsp             Real Time Streaming Protocol module
+  --mqtt             Message Queuing Telemetry Transport module
+  --open             Show only open devices
+  --first FIRST      First page
+  --last LAST        Last page
+  --recursive        Recusrive mode
+  --elasticsearch    Save to ElasticSearch (works only with recursive) mode
+  --host HOST        Elasticsearch host
+  --port PORT        Elasticsearch port
 
 Required arguments:
   --lat LAT          Latitude
   --lon LON          Longitude
+
 ```   
 
 ```
-root@kali:~/#python kamerka.py --lat 37.8368723 --lon -122.2645793 --camera --flickr --instagram --twitter --printer
+root@kali:~/#python kamerka.py --lat 37.8368723 --lon -122.2645793 --camera --flickr --instagram --twitter --printer --first 1 --last 1
 ```
 
 ![](https://i.imgur.com/OXFMYhc.png)
