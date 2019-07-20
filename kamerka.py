@@ -18,6 +18,7 @@ import google_streetview.api
 import random
 import requests
 import json
+from elasticsearch import Elasticsearch
 
 
 
@@ -59,12 +60,20 @@ parser.add_argument("--flickr", help="Flickr module", action='store_true')
 parser.add_argument("--instagram", help="Instagram module", action='store_true')
 parser.add_argument("--printer", help="Printer module", action='store_true')
 parser.add_argument("--country", help="Find Industrial Control Systems for country. Short code for country: US,IL,RU", default="")
+parser.add_argument("--rtsp", help="Real Time Streaming Protocol module",action="store_true")
+parser.add_argument("--mqtt", help="Message Queuing Telemetry Transport module", action="store_true")
+parser.add_argument("--open", help="Show only open devices", action="store_true")
+parser.add_argument('--first', help='First page', default=None, type=int)
+parser.add_argument('--last', help='Last page', default=None, type=int)
+parser.add_argument("--recursive", help="Recusrive mode", action="store_true")
+parser.add_argument("--elasticsearch", help="Save to ElasticSearch (works only with recursive) mode", action="store_true")
+parser.add_argument("--host", help="Elasticsearch host", default="localhost")
+parser.add_argument("--port", help="Elasticsearch port", default="9200")
 
 
 ###Initialize arguments
 args = parser.parse_args()
 dark = args.dark
-#address = args.address
 twitter = args.twitter
 camera = args.camera
 flickr = args.flickr
@@ -74,6 +83,30 @@ radius = args.radius
 lat = args.lat
 lon = args.lon
 country = args.country
+rtsp = args.rtsp
+open = args.open
+first = args.first
+last = args.last
+recursive=args.recursive
+mqtt = args.mqtt
+elasticsearch = args.elasticsearch
+port = args.port
+host = args.host
+
+if first and last is None:
+    print("Correct pages")
+    sys.exit()
+elif last and first is None:
+    print('Correct pages')
+    sys.exit()
+elif first is None and last is None:
+    print("Choose pages to search")
+    sys.exit()
+elif first > last:
+    print('Correct pages')
+    sys.exit()
+else:
+    last = last + 1
 
 coordinates = ""
 
@@ -86,10 +119,26 @@ if not country:
         print(Fore.RED + "Correct your coordinates" + Fore.RESET)
         sys.exit()
 
+def test_connection(host, port):
+    es = Elasticsearch(host=host, port=port)
+    if not es.ping():
+        print(Fore.RED+"Connection to Elasticsearch failed"+Fore.RESET)
+        sys.exit()
+    else:
+        print (Fore.GREEN+"Succesfully connected to ElasticSearch"+Fore.RESET)
+
+
+if not recursive and elasticsearch:
+    print(Fore.RED + "Output to Elasticsearch works only with recursive mode" + Fore.RESET)
+    sys.exit()
+elif elasticsearch and recursive:
+    test_connection(host,port)
+    elastic = True
+
 
 ###API keys and credentials
 #Shodan
-SHODAN_API_KEY = 'uBDrKLPxFkfF34S40ZtvaCX7micK9SEu'
+SHODAN_API_KEY = ''
 
 #Instagram
 INSTAGRAM_USER = ""
@@ -106,7 +155,7 @@ TWITTER_CONSUMER_KEY = ""
 TWITTER_CONSUMER_SECRET = ""
 
 #Google Street View
-GOOGLE_STREET_VIEW_API_KEY = "AIzaSyB0lewvZ6qrTzfvgiAI4xNID794ZDi4Sd0"
+GOOGLE_STREET_VIEW_API_KEY = ""
 
 #Change map theme
 tile = "OpenStreetMap"
@@ -133,6 +182,40 @@ ics_queries = ["port:502,102,47808,44818,5094 country:",
 'port:789 product:"Red Lion Controls" country:',
 "port:2404 asdu address country:",
 "port:2455 operating system country:"]
+
+
+def save_elastic(index, doc_type, body):
+    es = Elasticsearch(host=host, port=port)
+    # es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+    ids = []
+    print (Fore.GREEN + "Saving output to Elasticsearch"+Fore.RESET)
+
+    for i in body['data']:
+        if 'ssl' in i:
+            del i['ssl']['cert']['serial']
+
+    # try:
+    #
+    #     if resp['hits']['hits']:
+    #         for i in resp['hits']['hits']:
+    #             int_id = int(i['_id'])
+    #             ids.append(int_id)
+    #         last_id = max(ids)
+    #     else:
+    #         last_id = 0
+
+    resp = es.search(index=index)
+    try:
+        es.index(index=index, doc_type=doc_type, id=resp['hits']['total']+1, body=body)
+    except Exception as e:
+        print(Fore.RED + str(e) + Fore.RESET)
+
+    # except Exception as e:
+    #     try:
+    #         print('chuj')
+    #         es.index(index=index, doc_type=doc_type, id=1, body=body)
+    #     except Exception as e:
+    #         print(e.args)
 
 def g_streetview(lat, lon, key):
     # Define parameters for street view api
@@ -166,7 +249,21 @@ def get_host_info(ip):
     #     json.dump(req_json, outfile) ### IF you need to dump information for each host for statistics uncomment this line
     # it will create file named as IP with json data from Shodan
 
-    return req_json['ports']
+
+    results = {}
+
+    if elastic:
+        save_elastic('kamerka', 'kamerka', req_json)
+
+    try:
+        results['ports'] = req_json['ports']
+        results['hostnames'] = req_json['hostnames']
+    except:
+        results['ports'] = []
+        results['hostnames'] = []
+
+    return results
+
 
 def instagram_query(lat, lon):
     print("----------------" + Fore.MAGENTA + "Instagram" + Fore.RESET + "----------------")
@@ -216,11 +313,11 @@ def instagram_query(lat, lon):
     return dict_to_return
 
 #Shodan module
-def shodan_query(query, device):
+def shodan_query(query, device,page):
     print("----------------" + Fore.LIGHTRED_EX + 'Shodan ' + device  + Fore.RESET + "----------------")
     try:
         api = shodan.Shodan(SHODAN_API_KEY)
-        result = api.search(query)
+        result = api.search(query, page)
     except shodan.APIError as e:
         print(Fore.RED + e.value + Fore.RESET)
         return False
@@ -318,44 +415,113 @@ def draw_map(results, service, lat=None, lon=None):
     coordinates = []
     first_coordinates_measure = (lat, lon)
 
+    if service == "mqtt":
+        mqtt_open_icon = "https://www.iconsdb.com/icons/preview/green/network-xxl.png"
+        mqtt_closed_icon = "https://www.iconsdb.com/icons/preview/red/network-xxl.png"
+        if results:
+            all_ips = []
+
+            for counter, device in enumerate(results['matches']):
+                ip = device['ip_str']
+
+                coordinates.append(device['location']['latitude'])
+                coordinates.append(device['location']['longitude'])
+
+                popup_text = ip + "<br><a href=https://shodan.io/host/" + ip + ">Lookup on Shodan</a>" + " <br> <a href=https://bgp.he.net/ip/" + ip + "#_whois> Check ownership </a><br>"
+
+                if "Connection Code: 0" in device['data']:
+                    topics = device['data'].replace("MQTT Connection Code: 0", "")
+                    topics = topics.replace("Topics:","").strip()
+                    topics_list = topics.split()
+                    if len(topics_list) < 15:
+                        popup_text = popup_text + "Topics: <br>"+ topics.replace("\n","<br>")
+                    else:
+                        popup_text = popup_text + "Too many topics, please check manually on Shodan"
+
+
+                if recursive:
+                    if ip not in all_ips:
+
+                        print("Checking " + ip)
+                        details = get_host_info(ip)
+                        str1 = ','.join(details['hostnames'])
+                        popup_text = popup_text + "<br> Hostnames: " + str1 + "<br> "
+                        str2 = ','.join(str(e) for e in details['ports'])
+                        popup_text = popup_text + "Ports: " + str2
+                        all_ips.append(ip)
+
+                popup = folium.Popup(popup_text, max_width=2137)
+
+                #Check if device returns 200 OK, i.e. if it's open
+                if "Connection Code: 0" not in device['data']:
+                    shodan_icon = folium.features.CustomIcon(mqtt_closed_icon, icon_size=(35, 35))  # bug
+                else:
+                    shodan_icon = folium.features.CustomIcon(mqtt_open_icon, icon_size=(35, 35))  # bug
+
+                #if there is more than one device with the same coordinates, add it to cluster
+                if coordinates in repeats:
+                    folium.Marker([device['location']['latitude'], device['location']['longitude']], icon=shodan_icon,
+                                  popup=popup).add_to(marker_cluster)
+                else:
+                    folium.Marker([device['location']['latitude'], device['location']['longitude']], icon=shodan_icon,
+                                  popup=popup,
+                                  ).add_to(folium_map)
+
+                repeats.append(coordinates)  # make list of lists of coordinates
+
+
     if service == "printer":
         closed_printer_icon = "https://www.iconsdb.com/icons/preview/red/printer-xxl.png"
         open_printer_icon = "https://www.iconsdb.com/icons/preview/green/printer-xxl.png"
 
-        for counter, printer in enumerate(results['matches']):
-            ip = printer['ip_str']
-            product = printer['product']
+        if results:
+            all_ips = []
 
-            coordinates.append(printer['location']['latitude'])
-            coordinates.append(printer['location']['longitude'])
+            for counter, printer in enumerate(results['matches']):
+                ip = printer['ip_str']
+                product = printer['product']
 
+                coordinates.append(printer['location']['latitude'])
+                coordinates.append(printer['location']['longitude'])
 
-            popup_text = ip + "<br>" + product + "<br>"
-            popup = folium.Popup(popup_text, max_width=2137)
+                popup_text = ip + "<br>" + product + "<br><a href=https://shodan.io/host/" + ip + ">Lookup on Shodan</a>" + " <br> <a href=https://bgp.he.net/ip/" + ip + "#_whois> Check ownership </a><br>"
 
-            #Check if device returns 200 OK, i.e. if it's open
-            if "200 OK" not in printer['data']:
-                shodan_icon = folium.features.CustomIcon(closed_printer_icon, icon_size=(35, 35))  # bug
-            else:
-                shodan_icon = folium.features.CustomIcon(open_printer_icon, icon_size=(35, 35))  # bug
+                if recursive:
+                    if ip not in all_ips:
 
-            #if there is more than one device with the same coordinates, add it to cluster
-            if coordinates in repeats:
-                folium.Marker([printer['location']['latitude'], printer['location']['longitude']], icon=shodan_icon,
-                              popup=popup).add_to(marker_cluster)
-            else:
-                folium.Marker([printer['location']['latitude'], printer['location']['longitude']], icon=shodan_icon,
-                              popup=popup,
-                              ).add_to(folium_map)
+                        print("Checking " + ip)
+                        details = get_host_info(ip)
+                        str1 = ','.join(details['hostnames'])
+                        popup_text = popup_text + "<br> Hostnames: " + str1 + "<br> "
+                        str2 = ','.join(str(e) for e in details['ports'])
+                        popup_text = popup_text + "Ports: " + str2
+                        all_ips.append(ip)
 
-            repeats.append(coordinates)  # make list of lists of coordinates
+                popup = folium.Popup(popup_text, max_width=2137)
+
+                #Check if device returns 200 OK, i.e. if it's open
+                if "200 OK" not in printer['data']:
+                    shodan_icon = folium.features.CustomIcon(closed_printer_icon, icon_size=(35, 35))  # bug
+                else:
+                    shodan_icon = folium.features.CustomIcon(open_printer_icon, icon_size=(35, 35))  # bug
+
+                #if there is more than one device with the same coordinates, add it to cluster
+                if coordinates in repeats:
+                    folium.Marker([printer['location']['latitude'], printer['location']['longitude']], icon=shodan_icon,
+                                  popup=popup).add_to(marker_cluster)
+                else:
+                    folium.Marker([printer['location']['latitude'], printer['location']['longitude']], icon=shodan_icon,
+                                  popup=popup,
+                                  ).add_to(folium_map)
+
+                repeats.append(coordinates)  # make list of lists of coordinates
 
     if service == 'camera':
         closed_camera_icon = "https://www.iconsdb.com/icons/preview/red/security-camera-xxl.png"
         open_camera_icon = "https://www.iconsdb.com/icons/preview/green/security-camera-3-xxl.png"
 
         if results:
-
+            all_ips = []
             for counter, camera in enumerate(results['matches']):
                 ip = camera['ip_str']
                 product = camera['product']
@@ -365,8 +531,6 @@ def draw_map(results, service, lat=None, lon=None):
 
                 # make marker red
 
-
-
                 coordinates_measure = (camera['location']['latitude'], camera['location']['longitude'])
                 distance_compare = distance.distance(first_coordinates_measure, coordinates_measure).m
                 unit = "m"
@@ -374,8 +538,7 @@ def draw_map(results, service, lat=None, lon=None):
                     distance_compare = distance_compare / 1000
                     unit = "km"
 
-                popup_text = ip + "<br>" + product + "<br>" + str(distance_compare)[0:5] + "" + unit + " from target"
-
+                popup_text = ip + "<br>" + product + "<br>" + str(distance_compare)[0:5] + "" + unit + " from target" + "<br><a href=https://shodan.io/host/" + ip + ">Lookup on Shodan</a>" + " <br> <a href=https://bgp.he.net/ip/" + ip + "#_whois> Check ownership </a><br>"
                 #check if camera has screenshot
                 has_screenshot = 0
                 if 'opts' in camera:
@@ -383,6 +546,16 @@ def draw_map(results, service, lat=None, lon=None):
                     eocoded = camera['opts']['screenshot']['data']
                     html = '<img style="width:100%; height:100%;" src="data:image/jpeg;base64,{}">'.format(eocoded)
                     popup_text = popup_text + html
+
+                if recursive:
+                    if ip not in all_ips:
+                        print("Checking " + ip)
+                        details = get_host_info(ip)
+                        str1 = ','.join(details['hostnames'])
+                        popup_text = popup_text + "<br> Hostnames: " + str1 + "<br> "
+                        str2 = ','.join(str(e) for e in details['ports'])
+                        popup_text = popup_text + "Ports: " + str2
+                        all_ips.append(ip)
 
                 popup = folium.Popup(html=popup_text, max_width=2137)
 
@@ -407,6 +580,55 @@ def draw_map(results, service, lat=None, lon=None):
 
                     repeats.append(coordinates)  # make list of lists of coordinates
 
+    if service == 'rtsp':
+        closed_rtsp_icon = "https://www.iconsdb.com/icons/preview/red/security-camera-5-xxl.png"
+        open_rtsp_icon = "https://www.iconsdb.com/icons/preview/green/security-camera-5-xxl.png"
+
+        if results:
+            all_ips = []
+
+            for counter, camera in enumerate(results['matches']):
+                ip = camera['ip_str']
+                # product = camera['product']
+
+                coordinates.append(camera['location']['latitude'])
+                coordinates.append(camera['location']['longitude'])
+                # make marker red
+
+                coordinates_measure = (camera['location']['latitude'], camera['location']['longitude'])
+                distance_compare = distance.distance(first_coordinates_measure, coordinates_measure).m
+                unit = "m"
+                if distance_compare > 1000.0:
+                    distance_compare = distance_compare / 1000
+                    unit = "km"
+
+                popup_text = ip + "<br>" + str(distance_compare)[
+                                                              0:5] + "" + unit + " from target" + "<br><a href=https://shodan.io/host/" + ip + ">Lookup on Shodan</a>" + " <br> <a href=https://bgp.he.net/ip/" + ip + "#_whois> Check ownership </a><br>"
+                if recursive:
+                    print("Checking " + ip)
+                    details = get_host_info(ip)
+                    str1 = ','.join(details['hostnames'])
+                    popup_text = popup_text + "<br> Hostnames: " + str1 + "<br> "
+                    str2 = ','.join(str(e) for e in details['ports'])
+                    popup_text = popup_text + "Ports: " + str2
+                    all_ips.append(ip)
+
+                popup = folium.Popup(html=popup_text, max_width=2137)
+
+                if "200 OK" not in camera['data']:
+                    shodan_icon = folium.features.CustomIcon(closed_rtsp_icon, icon_size=(35, 35))  # bug
+                else:
+                    shodan_icon = folium.features.CustomIcon(open_rtsp_icon, icon_size=(35, 35))  # bug
+
+                if coordinates in repeats:
+                    folium.Marker([camera['location']['latitude'], camera['location']['longitude']], icon=shodan_icon,
+                                  popup=popup).add_to(marker_cluster)
+                else:
+                    folium.Marker([camera['location']['latitude'], camera['location']['longitude']], icon=shodan_icon,
+                                  popup=popup,
+                                  ).add_to(folium_map)
+
+                repeats.append(coordinates)
 
     if service == 'instagram':
         insta_icon = "http://icons-for-free.com/free-icons/png/512/2329265.png"
@@ -505,10 +727,10 @@ def draw_map(results, service, lat=None, lon=None):
             additional_ports = get_host_info(ip)
             additional_ports_without_default = []
 
-
-            for i in additional_ports:
-                if i != port:
-                    additional_ports_without_default.append(i)
+            if additional_ports:
+                        for i in additional_ports:
+                            if i != port:
+                                additional_ports_without_default.append(i)
 
             if len(additional_ports_without_default) > 0:
                 for i in additional_ports_without_default:
@@ -561,41 +783,64 @@ def draw_map(results, service, lat=None, lon=None):
 
 if lat and lon:
     print(desc)
-    geolocator = Nominatim(user_agent="Kamerka")
-
-    location = geolocator.reverse(coordinates, language='en')
-    if location.address is None:
+    try:
+        geolocator = Nominatim(user_agent="Kamerka")
+        location = geolocator.reverse(coordinates, language='en')
+        print(Fore.GREEN + location.address + Fore.RESET)
+    except:
         print(Fore.RED +  "No address was found for your coordinates" + Fore.RED)
-        sys.exit()
-    print(Fore.GREEN + location.address + Fore.RESET)
+        # sys.exit()
+
     string_printers = "geo:" + coordinates + "," + radius + " device:printer"
     string_cameras = "geo:" + coordinates + "," + radius + " device:webcam"
+    string_rtsp = "geo:" + coordinates + ","+radius+ " port:554"
+    string_mqtt = "geo:"+coordinates+","+radius+ " product:mqtt"
 
+
+    if open:
+        string_rtsp = string_rtsp + " 200 ok"
+        string_cameras = string_cameras + " 200 ok"
+        string_printers = string_printers + " 200 ok"
+        string_mqtt = string_mqtt + " 0"
 
     if twitter:
         twitter_results = twitter_query(coordinates)
         if twitter_results:
-            draw_map(twitter_results, lat, lon, 'twitter')
+            draw_map(twitter_results, 'twitter',lat, lon )
 
     if flickr:
         flickr_results = flickr_query(lat, lon)
         if flickr_results:
-            draw_map(flickr_results, lat, lon, 'flickr')
+            draw_map(flickr_results, 'flickr',lat, lon, )
 
     if camera:
-        cameras_results = shodan_query(string_cameras, 'camera')
-        if cameras_results:
-            draw_map(cameras_results, lat, lon, 'camera')
+        for page in range(first, last):
+            cameras_results = shodan_query(string_cameras, 'camera',page)
+            if cameras_results:
+                draw_map(cameras_results, "camera",lat, lon )
 
     if printer:
-        printers_results = shodan_query(string_printers, 'printer')
-        if printers_results:
-            draw_map(printers_results, lat, lon, 'printer')
+        for page in range(first, last):
+            printers_results = shodan_query(string_printers, 'printer',page)
+            if printers_results:
+                draw_map(printers_results, 'printer',lat, lon)
 
     if instagram:
         insta_results = instagram_query(lat, lon)
         if insta_results:
-            draw_map(insta_results, lat, lon, 'instagram')
+            draw_map(insta_results, 'instagram', lat, lon)
+
+    if rtsp:
+        for page in range(first, last):
+            rtsp_results = shodan_query(string_rtsp, "rtsp",page)
+            if rtsp_results:
+                draw_map(rtsp_results,"rtsp",lat,lon)
+
+    if mqtt:
+        for page in range(first, last):
+            mqtt_results = shodan_query(string_mqtt, "mqtt", page)
+            if mqtt_results:
+                draw_map(mqtt_results,'mqtt',page)
 
     print("Saving map as " + str(coordinates) + '.html')
     folium_map.save(str(coordinates) + ".html")
@@ -603,7 +848,7 @@ if lat and lon:
     sys.exit()
 
 
-elif country:
+if country:
     for ics_query in ics_queries:
         shodan_ics_results = shodan_query(ics_query+country, "ics")
         if shodan_ics_results:
