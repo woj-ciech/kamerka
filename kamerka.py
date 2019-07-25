@@ -63,8 +63,8 @@ parser.add_argument("--country", help="Find Industrial Control Systems for count
 parser.add_argument("--rtsp", help="Real Time Streaming Protocol module",action="store_true")
 parser.add_argument("--mqtt", help="Message Queuing Telemetry Transport module", action="store_true")
 parser.add_argument("--open", help="Show only open devices", action="store_true")
-parser.add_argument('--first', help='First page', default=None, type=int)
-parser.add_argument('--last', help='Last page', default=None, type=int)
+parser.add_argument('--first', help='First page', default=1, type=int)
+parser.add_argument('--last', help='Last page', default=1, type=int)
 parser.add_argument("--recursive", help="Recusrive mode", action="store_true")
 parser.add_argument("--elasticsearch", help="Save to ElasticSearch (works only with recursive) mode", action="store_true")
 parser.add_argument("--host", help="Elasticsearch host", default="localhost")
@@ -141,7 +141,7 @@ elif elasticsearch and recursive:
 SHODAN_API_KEY = ''
 
 #Instagram
-INSTAGRAM_USER = ""
+INSTAGRAM_USER = "+"
 INSTAGRAM_PASSWORD = ""
 
 #Flickr
@@ -357,7 +357,7 @@ def flickr_query(lat, lon):
     try:
         photo_list = flickr.photos.search(api_key=FLICKR_API_KEY, lat=lat, lon=lon, accuracy=16, format='parsed-json',per_page=100, extras='url_l,geo', has_geo=1 ,sort='newest')
     except Exception as e:
-        print(Fore.RED +  e.args + Fore.RESET)
+        print(Fore.RED +  str(e) + Fore.RESET)
         return False
 
     print("----------------" + Fore.LIGHTYELLOW_EX + "Flickr" + Fore.RESET + "----------------")
@@ -661,12 +661,15 @@ def draw_map(results, service, lat=None, lon=None):
 
             popup = folium.Popup(branca.element.IFrame(html=html, width=420, height=320), max_width=2137)
 
-            if coordinates in repeats:
-                folium.Marker([lat, int], icon=icon,
-                              popup=popup).add_to(marker_cluster)
-            else:
-                folium.Marker([lat, int], icon=icon,
-                              popup=popup).add_to(folium_map)
+            try:
+                if coordinates in repeats:
+                    folium.Marker([lat, long], icon=icon,
+                                  popup=popup).add_to(marker_cluster)
+                else:
+                    folium.Marker([lat, long], icon=icon,
+                                  popup=popup).add_to(folium_map)
+            except Exception as e:
+                pass
 
             repeats.append(str_coordinates)
 
@@ -676,39 +679,42 @@ def draw_map(results, service, lat=None, lon=None):
         help = 0
         for photo, coords in results.items():
             icon = folium.features.CustomIcon(twitter_icon, icon_size=(35, 35))  # bug
-            if coords in repeats:
-                if photo.startswith("https://"):
-                    twitter_icon_green = "https://www.iconsdb.com/icons/preview/green/twitter-xxl.png"
+            try:
+                if coords in repeats:
+                    if photo.startswith("https://"):
+                        twitter_icon_green = "https://www.iconsdb.com/icons/preview/green/twitter-xxl.png"
 
-                    icon = folium.features.CustomIcon(twitter_icon_green, icon_size=(35, 35))  # bug
-                    html = '<img style="width:100%; height:100%;" src="{}">'.format(photo)
-                    popup = folium.Popup(branca.element.IFrame(html=html, width=420, height=320), max_width=2137)
+                        icon = folium.features.CustomIcon(twitter_icon_green, icon_size=(35, 35))  # bug
+                        html = '<img style="width:100%; height:100%;" src="{}">'.format(photo)
+                        popup = folium.Popup(branca.element.IFrame(html=html, width=420, height=320), max_width=2137)
 
-                    folium.Marker([coords[1], coords[0]], icon=icon,
-                                  popup=popup).add_to(marker_cluster)
+                        folium.Marker([coords[1], coords[0]], icon=icon,
+                                      popup=popup).add_to(marker_cluster)
+                    else:
+                        test = folium.Html(photo, script=False)
+                        popup = folium.Popup(test, max_width=2650)
+
+                        folium.Marker([coords[1], coords[0]], icon=icon,
+                                      popup=popup).add_to(marker_cluster)
                 else:
-                    test = folium.Html(photo, script=False)
-                    popup = folium.Popup(test, max_width=2650)
+                    if photo.startswith("https://"):
+                        twitter_icon_green = "https://www.iconsdb.com/icons/preview/green/twitter-xxl.png"
 
-                    folium.Marker([coords[1], coords[0]], icon=icon,
-                                  popup=popup).add_to(marker_cluster)
-            else:
-                if photo.startswith("https://"):
-                    twitter_icon_green = "https://www.iconsdb.com/icons/preview/green/twitter-xxl.png"
+                        icon = folium.features.CustomIcon(twitter_icon_green, icon_size=(35, 35))  # bug
+                        html = '<img style="width:100%; height:100%;" src="{}">'.format(photo)
+                        popup = folium.Popup(branca.element.IFrame(html=html, width=420, height=320), max_width=2137)
 
-                    icon = folium.features.CustomIcon(twitter_icon_green, icon_size=(35, 35))  # bug
-                    html = '<img style="width:100%; height:100%;" src="{}">'.format(photo)
-                    popup = folium.Popup(branca.element.IFrame(html=html, width=420, height=320), max_width=2137)
+                        folium.Marker([coords[1], coords[0]], icon=icon,
+                                      popup=popup).add_to(folium_map)
+                    else:
+                        test = folium.Html(photo, script=False)
+                        popup = folium.Popup(test, max_width=2650)
+                        folium.Marker([coords[1], coords[0]], icon=icon,popup=popup).add_to(folium_map)
 
-                    folium.Marker([coords[1], coords[0]], icon=icon,
-                                  popup=popup).add_to(folium_map)
-                else:
-                    test = folium.Html(photo, script=False)
-                    popup = folium.Popup(test, max_width=2650)
-                    folium.Marker([coords[1], coords[0]], icon=icon,popup=popup).add_to(folium_map)
-
-            repeats.append(coords)
-            help = help + 1
+                repeats.append(coords)
+                help = help + 1
+            except:
+                pass
 
     if service == "ics":
         color = "%06x" % random.randint(0, 0xFFFFFF)
