@@ -65,7 +65,7 @@ parser.add_argument("--mqtt", help="Message Queuing Telemetry Transport module",
 parser.add_argument("--open", help="Show only open devices", action="store_true")
 parser.add_argument('--first', help='First page', default=1, type=int)
 parser.add_argument('--last', help='Last page', default=1, type=int)
-parser.add_argument("--recursive", help="Recusrive mode", action="store_true")
+parser.add_argument("--recursive", help="Recursive mode", action="store_true")
 parser.add_argument("--elasticsearch", help="Save to ElasticSearch (works only with recursive) mode", action="store_true")
 parser.add_argument("--host", help="Elasticsearch host", default="localhost")
 parser.add_argument("--port", help="Elasticsearch port", default="9200")
@@ -252,7 +252,7 @@ def get_host_info(ip):
 
     results = {}
 
-    if elastic:
+    if elasticsearch:
         save_elastic('kamerka', 'kamerka', req_json)
 
     try:
@@ -846,7 +846,7 @@ if lat and lon:
         for page in range(first, last):
             mqtt_results = shodan_query(string_mqtt, "mqtt", page)
             if mqtt_results:
-                draw_map(mqtt_results,'mqtt',page)
+                draw_map(mqtt_results,'mqtt',lat,lon)
 
     print("Saving map as " + str(coordinates) + '.html')
     folium_map.save(str(coordinates) + ".html")
@@ -856,7 +856,8 @@ if lat and lon:
 
 if country:
     for ics_query in ics_queries:
-        shodan_ics_results = shodan_query(ics_query+country, "ics")
+        print("----------------"+ Fore.BLUE + ics_query + country + Fore.RESET + "----------------")
+        shodan_ics_results = shodan_query(ics_query+country, "ics",1)
         if shodan_ics_results:
             ics_coordinates = draw_map(shodan_ics_results, "ics")
 
