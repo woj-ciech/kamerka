@@ -30,13 +30,13 @@ To use Street View add your API key in line 109
 
 
 ```
-root@kali:~/# python kamerka.py --country PL --first 1 --last 3
+root@kali:~/# python kamerka.py --country PL
 ```
 
 ![](https://i.imgur.com/IYIcd22.jpg)
 
 ```
-root@kali:~/# python kamerka.py --country CH --first 1 --last 3
+root@kali:~/# python kamerka.py --country CH
 ```
 
 ![](https://i.imgur.com/yq9yNpv.jpg)
