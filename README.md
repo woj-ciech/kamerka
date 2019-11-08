@@ -115,7 +115,7 @@ optional arguments:
   --open             Show only open devices
   --first FIRST      First page
   --last LAST        Last page
-  --recursive        Recusrive mode
+  --recursive        Recursive mode
   --elasticsearch    Save to ElasticSearch (works only with recursive) mode
   --host HOST        Elasticsearch host
   --port PORT        Elasticsearch port
