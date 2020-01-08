@@ -1,3 +1,7 @@
+# NOT SUPPORTED OR DEVELOPED ANYMORE
+# PLEASE USE GUI VERSION
+https://github.com/woj-ciech/Kamerka-GUI
+
 # ꓘamerka 2.0 aka FIST (Flickr, Instagram, Shodan, Twitter)
 *Build interactive map of cameras, printers, tweets and photos.* 
 
